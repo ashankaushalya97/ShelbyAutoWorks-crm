@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -7,21 +7,28 @@ import useLanguage from '@/locale/useLanguage';
 
 import { Form, Button } from 'antd';
 
-import { login } from '@/redux/auth/actions';
+import { login, register } from '@/redux/auth/actions';
 import { selectAuth } from '@/redux/auth/selectors';
 import LoginForm from '@/forms/LoginForm';
 import Loading from '@/components/Loading';
 import AuthModule from '@/modules/AuthModule';
+import RegisterForm from '@/forms/RegisterForm';
 
 const LoginPage = () => {
   const translate = useLanguage();
   const { isLoading, isSuccess } = useSelector(selectAuth);
   const navigate = useNavigate();
-  // const size = useSize();
+
+  const [isRegister, setIsRegister] = useState(false);
 
   const dispatch = useDispatch();
+  
   const onFinish = (values) => {
-    dispatch(login({ loginData: values }));
+    if (isRegister) {
+      dispatch(register({ registerData: values }));
+    } else {
+      dispatch(login({ loginData: values }));
+    }
   };
 
   useEffect(() => {
@@ -42,7 +49,8 @@ const LoginPage = () => {
           }}
           onFinish={onFinish}
         >
-          <LoginForm />
+          {isRegister ? <RegisterForm /> : <LoginForm />}
+          
           <Form.Item>
             <Button
               type="primary"
@@ -51,15 +59,34 @@ const LoginPage = () => {
               loading={isLoading}
               size="large"
             >
-              {translate('Log in')}
+              {isRegister ? translate('Register') : translate('Log in')}
             </Button>
           </Form.Item>
+          
+          {
+            isRegister ? (
+              <div style={{ textAlign: 'center' }}>
+                {translate('Already have an account?')}{' '}
+                <a onClick={() => setIsRegister(false)} style={{ fontWeight: 600 }}>
+                  {translate('Login')}
+                </a>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center' }}>
+                {translate('New Here?')}{' '}
+                <a onClick={() => setIsRegister(true)} style={{ fontWeight: 600 }}>
+                  {translate('Register')}
+                </a>
+              </div>
+            )
+          }
+         
         </Form>
       </Loading>
     );
   };
 
-  return <AuthModule authContent={<FormContainer />} AUTH_TITLE="Sign in" />;
+  return <AuthModule authContent={<FormContainer />} AUTH_TITLE={isRegister ? "Sign up" : "Sign in"} />;
 };
 
 export default LoginPage;

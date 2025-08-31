@@ -21,6 +21,19 @@ export default function RegisterForm({ userLocation }) {
       >
         <Input prefix={<UserOutlined className="site-form-item-icon" />} size="large" />
       </Form.Item>
+      
+      <Form.Item
+        name="surname"
+        label={translate('surname')}
+        rules={[
+          {
+            required: true,
+          },
+        ]}
+      >
+        <Input prefix={<UserOutlined className="site-form-item-icon" />} size="large" />
+      </Form.Item>
+      
       <Form.Item
         name="email"
         label={translate('email')}
@@ -39,6 +52,7 @@ export default function RegisterForm({ userLocation }) {
           size="large"
         />
       </Form.Item>
+      
       <Form.Item
         name="password"
         label={translate('password')}
@@ -50,29 +64,10 @@ export default function RegisterForm({ userLocation }) {
       >
         <Input.Password prefix={<LockOutlined className="site-form-item-icon" />} size="large" />
       </Form.Item>
-      {/* <Form.Item
-        name="confirm_password"
-        label={translate('confirm_password')}
-        rules={[
-          {
-            required: true,
-          },
-          ({ getFieldValue }) => ({
-            validator(_, value) {
-              if (!value || getFieldValue('password') === value) {
-                return Promise.resolve();
-              }
-              return Promise.reject(new Error('The two passwords that you entered do not match!'));
-            },
-          }),
-        ]}
-        hasFeedback
-      >
-        <Input.Password prefix={<LockOutlined className="site-form-item-icon" />} size="large" />
-      </Form.Item> */}
+      
       <Form.Item
-        label={translate('country')}
         name="country"
+        label={translate('country')}
         rules={[
           {
             required: true,
