@@ -20,7 +20,7 @@ function useFetchData(fetchFunction) {
     }
 
     fetchData();
-  }, [isLoading]);
+  }, []); // Remove the incorrect dependency that was causing infinite loop
 
   return { data, isLoading, isSuccess, error };
 }

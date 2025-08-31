@@ -1,5 +1,5 @@
 import { Space, Layout, Divider, Typography } from 'antd';
-import logo from '@/style/images/idurar-crm-erp.svg';
+import logo from '@/style/images/shelbylogo.png';
 import useLanguage from '@/locale/useLanguage';
 import { useSelector } from 'react-redux';
 
@@ -12,10 +12,15 @@ export default function SideContent() {
   return (
     <Content
       style={{
-        padding: '150px 30px 30px',
+        // padding: '150px 30px 30px',
         width: '100%',
-        maxWidth: '450px',
+        // maxWidth: '500px',
         margin: '0 auto',
+        // borderWidth: '2px', borderColor: 'red', borderStyle: 'solid',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
       }}
       className="sideContent"
     >
@@ -23,19 +28,19 @@ export default function SideContent() {
         <img
           src={logo}
           alt="IDURAR ERP CRM"
-          style={{ margin: '0 0 40px', display: 'block' }}
-          height={63}
-          width={220}
+          style={{display: 'block',objectFit: 'contain' }}
+          height={150}
+          width={500}
         />
 
-        <Title level={1} style={{ fontSize: 28 }}>
+        {/* <Title level={1} style={{ fontSize: 28 }}>
           Free Open Source ERP / CRM
         </Title>
         <Text>
           Accounting / Invoicing / Quote App <b /> based on Node.js React.js Ant Design
-        </Text>
+        </Text> */}
 
-        <div className="space20"></div>
+        {/* <div className="space20"></div> */}
       </div>
     </Content>
   );

@@ -4,6 +4,21 @@ import { request } from '@/request';
 const dispatchSettingsData = (datas) => {
   const settingsCategory = {};
 
+  // Handle empty array case
+  if (!datas || datas.length === 0) {
+    // Return default settings structure when no settings exist
+    return {
+      crm_settings: {},
+      finance_settings: {},
+      company_settings: {},
+      app_settings: {},
+      money_format_settings: {
+        default_currency_code: 'USD', // Provide a default currency
+        default_currency_symbol: '$',
+      },
+    };
+  }
+
   datas.map((data) => {
     settingsCategory[data.settingCategory] = {
       ...settingsCategory[data.settingCategory],
@@ -46,11 +61,12 @@ export const settingsAction = {
 
         let data = await request.listAll({ entity });
 
-        if (data.success === true) {
-          const payload = dispatchSettingsData(data.result);
+        // Handle both success cases: with data and empty collection
+        if (data.success === true || (data.success === false && data.result && data.result.length === 0)) {
+          const payload = dispatchSettingsData(data.result || []);
           window.localStorage.setItem(
             'settings',
-            JSON.stringify(dispatchSettingsData(data.result))
+            JSON.stringify(payload)
           );
 
           dispatch({
@@ -86,11 +102,12 @@ export const settingsAction = {
 
         let data = await request.listAll({ entity });
 
-        if (data.success === true) {
-          const payload = dispatchSettingsData(data.result);
+        // Handle both success cases: with data and empty collection
+        if (data.success === true || (data.success === false && data.result && data.result.length === 0)) {
+          const payload = dispatchSettingsData(data.result || []);
           window.localStorage.setItem(
             'settings',
-            JSON.stringify(dispatchSettingsData(data.result))
+            JSON.stringify(payload)
           );
 
           dispatch({
@@ -115,19 +132,49 @@ export const settingsAction = {
         type: actionTypes.REQUEST_LOADING,
       });
 
-      let data = await request.listAll({ entity });
+      try {
+        let data = await request.listAll({ entity });
 
-      if (data.success === true) {
-        const payload = dispatchSettingsData(data.result);
-        window.localStorage.setItem('settings', JSON.stringify(dispatchSettingsData(data.result)));
+        // Handle both success cases: with data and empty collection
+        if (data.success === true || (data.success === false && data.result && data.result.length === 0)) {
+          const payload = dispatchSettingsData(data.result || []);
+          window.localStorage.setItem('settings', JSON.stringify(payload));
 
+          dispatch({
+            type: actionTypes.REQUEST_SUCCESS,
+            payload,
+          });
+        } else {
+          // If the API call failed but we have some data, try to use it
+          if (data.result && Array.isArray(data.result)) {
+            const payload = dispatchSettingsData(data.result);
+            window.localStorage.setItem('settings', JSON.stringify(payload));
+            
+            dispatch({
+              type: actionTypes.REQUEST_SUCCESS,
+              payload,
+            });
+          } else {
+            // Complete failure, provide default settings
+            const defaultPayload = dispatchSettingsData([]);
+            window.localStorage.setItem('settings', JSON.stringify(defaultPayload));
+            
+            dispatch({
+              type: actionTypes.REQUEST_SUCCESS,
+              payload: defaultPayload,
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error loading settings:', error);
+        
+        // On error, provide default settings to prevent infinite loading
+        const defaultPayload = dispatchSettingsData([]);
+        window.localStorage.setItem('settings', JSON.stringify(defaultPayload));
+        
         dispatch({
           type: actionTypes.REQUEST_SUCCESS,
-          payload,
-        });
-      } else {
-        dispatch({
-          type: actionTypes.REQUEST_FAILED,
+          payload: defaultPayload,
         });
       }
     },
@@ -151,11 +198,12 @@ export const settingsAction = {
 
         let data = await request.listAll({ entity });
 
-        if (data.success === true) {
-          const payload = dispatchSettingsData(data.result);
+        // Handle both success cases: with data and empty collection
+        if (data.success === true || (data.success === false && data.result && data.result.length === 0)) {
+          const payload = dispatchSettingsData(data.result || []);
           window.localStorage.setItem(
             'settings',
-            JSON.stringify(dispatchSettingsData(data.result))
+            JSON.stringify(payload)
           );
           dispatch({
             type: actionTypes.REQUEST_SUCCESS,

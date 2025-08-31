@@ -5,7 +5,8 @@ import { Button, Drawer, Layout, Menu } from 'antd';
 import { useAppContext } from '@/context/appContext';
 
 import useLanguage from '@/locale/useLanguage';
-import logoIcon from '@/style/images/logo-icon.svg';
+// import logoIcon from '@/style/images/logo-icon.svg';
+import logoIcon from '@/style/images/shelbylogo.png';
 import logoText from '@/style/images/logo-text.svg';
 
 import useResponsive from '@/hooks/useResponsive';
@@ -145,15 +146,23 @@ function Sidebar({ collapsible, isMobile = false }) {
       theme={'light'}
     >
       <div
-        className="logo"
+        // className="logo"
         onClick={() => navigate('/')}
         style={{
           cursor: 'pointer',
         }}
       >
-        <img src={logoIcon} alt="Logo" style={{ marginLeft: '-5px', height: '40px' }} />
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          // padding: '10px'
+          // borderWidth: '2px', borderColor: 'red', borderStyle: 'solid'
+        }}>
+          <img src={logoIcon} alt="Logo" style={{ height: '80px', width: '200px', objectFit: 'contain' }} />
+        </div>
 
-        {!showLogoApp && (
+        {/* {!showLogoApp && (
           <img
             src={logoText}
             alt="Logo"
@@ -163,7 +172,7 @@ function Sidebar({ collapsible, isMobile = false }) {
               height: '38px',
             }}
           />
-        )}
+        )} */}
       </div>
       <Menu
         items={items}

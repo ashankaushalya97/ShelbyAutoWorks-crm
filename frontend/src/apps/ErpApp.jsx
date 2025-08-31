@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { useEffect } from 'react';
 import { selectAppSettings } from '@/redux/settings/selectors';
 import { useDispatch, useSelector } from 'react-redux';
@@ -30,11 +30,64 @@ export default function ErpCrmApp() {
   // const { isNavMenuClose, currentApp } = stateApp;
 
   const { isMobile } = useResponsive();
+  const [hasTimedOut, setHasTimedOut] = useState(false);
 
   const dispatch = useDispatch();
 
   useLayoutEffect(() => {
-    dispatch(settingsAction.list({ entity: 'setting' }));
+    // Set a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      console.warn('Settings loading timed out, using default settings');
+      setHasTimedOut(true);
+      
+      // Provide default settings to prevent infinite loading
+      const defaultSettings = {
+        crm_settings: {},
+        finance_settings: {},
+        company_settings: {},
+        app_settings: {},
+        money_format_settings: {
+          default_currency_code: 'USD',
+          default_currency_symbol: '$',
+        },
+      };
+      
+      dispatch({
+        type: 'settings/REQUEST_SUCCESS',
+        payload: defaultSettings,
+      });
+    }, 10000); // 10 second timeout
+
+    // Check if settings are already in localStorage to avoid unnecessary API call
+    const cachedSettings = window.localStorage.getItem('settings');
+    if (cachedSettings) {
+      try {
+        const parsedSettings = JSON.parse(cachedSettings);
+        // Check if cached settings have the required structure
+        if (parsedSettings && typeof parsedSettings === 'object') {
+          // Clear timeout since we have valid cached settings
+          clearTimeout(timeoutId);
+          // Dispatch the cached settings immediately to avoid loading state
+          dispatch({
+            type: 'settings/REQUEST_SUCCESS',
+            payload: parsedSettings,
+          });
+        } else {
+          // Invalid cached settings, make API call
+          dispatch(settingsAction.list({ entity: 'setting' }));
+        }
+      } catch (error) {
+        console.error('Error parsing cached settings:', error);
+        // If parsing fails, fall back to API call
+        dispatch(settingsAction.list({ entity: 'setting' }));
+      }
+    } else {
+      // No cached settings, make API call
+      dispatch(settingsAction.list({ entity: 'setting' }));
+    }
+
+    // Cleanup timeout on unmount
+    return () => clearTimeout(timeoutId);
   }, []);
 
   // const appSettings = useSelector(selectAppSettings);
@@ -48,7 +101,7 @@ export default function ErpCrmApp() {
   //   }
   // }, [appSettings]);
 
-  if (settingIsloaded)
+  if (settingIsloaded || hasTimedOut)
     return (
       <Layout hasSider>
         <Navigation />
@@ -86,5 +139,24 @@ export default function ErpCrmApp() {
         )}
       </Layout>
     );
-  else return <PageLoader />;
+  else return (
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      height: '100vh',
+      textAlign: 'center'
+    }}>
+      <PageLoader />
+      <div style={{ marginTop: '20px', fontSize: '16px', color: '#666' }}>
+        Loading application settings...
+      </div>
+      {hasTimedOut && (
+        <div style={{ marginTop: '10px', fontSize: '14px', color: '#999' }}>
+          Using default settings
+        </div>
+      )}
+    </div>
+  );
 }

@@ -87,7 +87,9 @@ export default function RecentTable({ ...props }) {
   const asyncList = () => {
     return request.list({ entity });
   };
+  
   const { result, isLoading, isSuccess } = useFetch(asyncList);
+  
   const firstFiveItems = () => {
     if (isSuccess && result) return result.slice(0, 5);
     return [];
@@ -101,6 +103,9 @@ export default function RecentTable({ ...props }) {
       pagination={false}
       loading={isLoading}
       scroll={{ x: true }}
+      locale={{
+        emptyText: isLoading ? 'Loading...' : 'No data available',
+      }}
     />
   );
 }

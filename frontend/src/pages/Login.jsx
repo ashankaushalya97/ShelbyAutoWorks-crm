@@ -7,7 +7,7 @@ import useLanguage from '@/locale/useLanguage';
 
 import { Form, Button } from 'antd';
 
-import { login, register } from '@/redux/auth/actions';
+import { login, register, resetState } from '@/redux/auth/actions';
 import { selectAuth } from '@/redux/auth/selectors';
 import LoginForm from '@/forms/LoginForm';
 import Loading from '@/components/Loading';
@@ -32,8 +32,14 @@ const LoginPage = () => {
   };
 
   useEffect(() => {
-    if (isSuccess) navigate('/');
-  }, [isSuccess]);
+    if (isSuccess) {
+      navigate('/');
+      // Reset auth state after successful navigation to prevent lingering states
+      setTimeout(() => {
+        dispatch(resetState());
+      }, 100);
+    }
+  }, [isSuccess, navigate, dispatch]);
 
   const FormContainer = () => {
     return (
@@ -44,8 +50,8 @@ const LoginPage = () => {
           className="login-form"
           initialValues={{
             remember: true,
-            email:'admin@admin.com',
-            password:'admin123',
+            email:'ashankaushalya952@gmail.com',
+            password:'Ash@2025',
           }}
           onFinish={onFinish}
         >

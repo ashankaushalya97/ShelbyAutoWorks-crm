@@ -139,19 +139,28 @@ export const logout = () => async (dispatch) => {
 export const updateProfile =
   ({ entity, jsonData }) =>
   async (dispatch) => {
-    let data = await request.updateAndUpload({ entity, id: '', jsonData });
+    dispatch({
+      type: actionTypes.REQUEST_LOADING,
+    });
+    const data = await request.patch({
+      entity: entity + '/update/' + jsonData._id,
+      jsonData,
+    });
 
     if (data.success === true) {
       dispatch({
         type: actionTypes.REQUEST_SUCCESS,
         payload: data.result,
       });
-      const auth_state = {
-        current: data.result,
-        isLoggedIn: true,
-        isLoading: false,
-        isSuccess: true,
-      };
-      window.localStorage.setItem('auth', JSON.stringify(auth_state));
+    } else {
+      dispatch({
+        type: actionTypes.REQUEST_FAILED,
+      });
     }
   };
+
+export const resetState = () => (dispatch) => {
+  dispatch({
+    type: actionTypes.RESET_STATE,
+  });
+};

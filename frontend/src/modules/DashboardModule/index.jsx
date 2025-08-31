@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { Tag, Row, Col } from 'antd';
+import { Tag, Row, Col, Spin } from 'antd';
 import useLanguage from '@/locale/useLanguage';
 
 import { useMoney } from '@/settings';
@@ -57,6 +57,16 @@ export default function DashboardModule() {
       fetchPayemntsStats(getStatsData({ entity: 'payment', currency }));
     }
   }, [money_format_settings.default_currency_code]);
+
+  // Show loading state if settings are not yet loaded
+  if (!money_format_settings || Object.keys(money_format_settings).length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <Spin size="large" />
+        <div style={{ marginTop: '20px' }}>Loading dashboard...</div>
+      </div>
+    );
+  }
 
   const dataTableColumns = [
     {
@@ -124,76 +134,72 @@ export default function DashboardModule() {
     );
   });
 
-  if (money_format_settings) {
-    return (
-      <>
-        <Row gutter={[32, 32]}>
-          <SummaryCard
-            title={translate('Invoices')}
-            prefix={translate('This month')}
-            isLoading={invoiceLoading}
-            data={invoiceResult?.total}
+  return (
+    <>
+      <Row gutter={[32, 32]}>
+        <SummaryCard
+          title={translate('Invoices')}
+          prefix={translate('This month')}
+          isLoading={invoiceLoading}
+          data={invoiceResult?.total}
+        />
+        <SummaryCard
+          title={translate('Quote')}
+          prefix={translate('This month')}
+          isLoading={quoteLoading}
+          data={quoteResult?.total}
+        />
+        <SummaryCard
+          title={translate('paid')}
+          prefix={translate('This month')}
+          isLoading={paymentLoading}
+          data={paymentResult?.total}
+        />
+        <SummaryCard
+          title={translate('Unpaid')}
+          prefix={translate('Not Paid')}
+          isLoading={invoiceLoading}
+          data={invoiceResult?.total_undue}
+        />
+      </Row>
+      <div className="space30"></div>
+      <Row gutter={[32, 32]}>
+        <Col className="gutter-row w-full" sm={{ span: 24 }} md={{ span: 24 }} lg={{ span: 18 }}>
+          <div className="whiteBox shadow" style={{ height: 458 }}>
+            <Row className="pad20" gutter={[0, 0]}>
+              {statisticCards}
+            </Row>
+          </div>
+        </Col>
+        <Col className="gutter-row w-full" sm={{ span: 24 }} md={{ span: 24 }} lg={{ span: 6 }}>
+          <CustomerPreviewCard
+            isLoading={clientLoading}
+            activeCustomer={clientResult?.active}
+            newCustomer={clientResult?.new}
           />
-          <SummaryCard
-            title={translate('Quote')}
-            prefix={translate('This month')}
-            isLoading={quoteLoading}
-            data={quoteResult?.total}
-          />
-          <SummaryCard
-            title={translate('paid')}
-            prefix={translate('This month')}
-            isLoading={paymentLoading}
-            data={paymentResult?.total}
-          />
-          <SummaryCard
-            title={translate('Unpaid')}
-            prefix={translate('Not Paid')}
-            isLoading={invoiceLoading}
-            data={invoiceResult?.total_undue}
-          />
-        </Row>
-        <div className="space30"></div>
-        <Row gutter={[32, 32]}>
-          <Col className="gutter-row w-full" sm={{ span: 24 }} md={{ span: 24 }} lg={{ span: 18 }}>
-            <div className="whiteBox shadow" style={{ height: 458 }}>
-              <Row className="pad20" gutter={[0, 0]}>
-                {statisticCards}
-              </Row>
-            </div>
-          </Col>
-          <Col className="gutter-row w-full" sm={{ span: 24 }} md={{ span: 24 }} lg={{ span: 6 }}>
-            <CustomerPreviewCard
-              isLoading={clientLoading}
-              activeCustomer={clientResult?.active}
-              newCustomer={clientResult?.new}
-            />
-          </Col>
-        </Row>
-        <div className="space30"></div>
-        <Row gutter={[32, 32]}>
-          <Col className="gutter-row w-full" sm={{ span: 24 }} lg={{ span: 12 }}>
-            <div className="whiteBox shadow pad20" style={{ height: '100%' }}>
-              <h3 style={{ color: '#22075e', marginBottom: 5, padding: '0 20px 20px' }}>
-                {translate('Recent Invoices')}
-              </h3>
+        </Col>
+      </Row>
+      <div className="space30"></div>
+      <Row gutter={[32, 32]}>
+        <Col className="gutter-row w-full" sm={{ span: 24 }} lg={{ span: 12 }}>
+          <div className="whiteBox shadow pad20" style={{ height: '100%' }}>
+            <h3 style={{ color: '#22075e', marginBottom: 5, padding: '0 20px 20px' }}>
+              {translate('Recent Invoices')}
+            </h3>
 
-              <RecentTable entity={'invoice'} dataTableColumns={dataTableColumns} />
-            </div>
-          </Col>
+            <RecentTable entity={'invoice'} dataTableColumns={dataTableColumns} />
+          </div>
+        </Col>
 
-          <Col className="gutter-row w-full" sm={{ span: 24 }} lg={{ span: 12 }}>
-            <div className="whiteBox shadow pad20" style={{ height: '100%' }}>
-              <h3 style={{ color: '#22075e', marginBottom: 5, padding: '0 20px 20px' }}>
-                {translate('Recent Quotes')}
-              </h3>
-              <RecentTable entity={'quote'} dataTableColumns={dataTableColumns} />
-            </div>
-          </Col>
-        </Row>
-      </>
-    );
-  } else {
-    return <></>;
-  }
+        <Col className="gutter-row w-full" sm={{ span: 24 }} lg={{ span: 12 }}>
+          <div className="whiteBox shadow pad20" style={{ height: '100%' }}>
+            <h3 style={{ color: '#22075e', marginBottom: 5, padding: '0 20px 20px' }}>
+              {translate('Recent Quotes')}
+            </h3>
+            <RecentTable entity={'quote'} dataTableColumns={dataTableColumns} />
+          </div>
+        </Col>
+      </Row>
+    </>
+  );
 }
