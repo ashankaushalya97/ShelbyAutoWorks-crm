@@ -10,6 +10,7 @@ import useFetch from '@/hooks/useFetch';
 import useOnFetch from '@/hooks/useOnFetch';
 
 import RecentTable from './components/RecentTable';
+import PnlPanel from './components/PnlPanel';
 
 import SummaryCard from './components/SummaryCard';
 import PreviewCard from './components/PreviewCard';
@@ -136,6 +137,7 @@ export default function DashboardModule() {
 
   return (
     <>
+      <PnlPanel />
       <Row gutter={[32, 32]}>
         <SummaryCard
           title={translate('Invoices')}

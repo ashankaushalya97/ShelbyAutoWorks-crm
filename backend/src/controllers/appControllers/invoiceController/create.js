@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const Model = mongoose.model('Invoice');
 
 const { calculate } = require('@/helpers');
-const { increaseBySettingKey } = require('@/middlewares/settings');
 const schema = require('./schemaValidate');
 
 const create = async (req, res) => {
@@ -21,18 +20,14 @@ const create = async (req, res) => {
 
   const { items = [], taxRate = 0, discount = 0 } = value;
 
-  // default
   let subTotal = 0;
   let taxTotal = 0;
   let total = 0;
 
-  //Calculate the items array with subTotal, total, taxTotal
   items.map((item) => {
-    let total = calculate.multiply(item['quantity'], item['price']);
-    //sub total
-    subTotal = calculate.add(subTotal, total);
-    //item total
-    item['total'] = total;
+    let itemTotal = calculate.multiply(item['quantity'], item['price']);
+    subTotal = calculate.add(subTotal, itemTotal);
+    item['total'] = itemTotal;
   });
   taxTotal = calculate.multiply(subTotal, taxRate / 100);
   total = calculate.add(subTotal, taxTotal);
@@ -41,29 +36,44 @@ const create = async (req, res) => {
   body['taxTotal'] = taxTotal;
   body['total'] = total;
   body['items'] = items;
-
-  let paymentStatus = calculate.sub(total, discount) === 0 ? 'paid' : 'unpaid';
-
-  body['paymentStatus'] = paymentStatus;
+  // If user explicitly marks the invoice as paid, honour it; otherwise derive from totals
+  if (body.status === 'paid') {
+    body['paymentStatus'] = 'paid';
+  } else {
+    body['paymentStatus'] = calculate.sub(total, discount) === 0 ? 'paid' : 'unpaid';
+  }
   body['createdBy'] = req.admin._id;
 
-  // Creating a new document in the collection
+  // Auto-generate invoiceNumber in INV-YYYYMM-XXX format
+  const invoiceDate = new Date(body.date) || new Date();
+  const year = invoiceDate.getFullYear();
+  const month = String(invoiceDate.getMonth() + 1).padStart(2, '0');
+  const monthPrefix = `INV-${year}${month}`;
+
+  const lastInvoice = await Model.findOne({
+    invoiceNumber: new RegExp(`^${monthPrefix}`),
+    removed: false,
+  }).sort({ invoiceNumber: -1 });
+
+  let seq = 1;
+  if (lastInvoice?.invoiceNumber) {
+    const parts = lastInvoice.invoiceNumber.split('-');
+    const lastSeq = parseInt(parts[2], 10);
+    if (!isNaN(lastSeq)) seq = lastSeq + 1;
+  }
+
+  body['invoiceNumber'] = `${monthPrefix}-${String(seq).padStart(3, '0')}`;
+  body['number'] = seq;
+  body['year'] = year;
+
   const result = await new Model(body).save();
   const fileId = 'invoice-' + result._id + '.pdf';
   const updateResult = await Model.findOneAndUpdate(
     { _id: result._id },
     { pdf: fileId },
-    {
-      new: true,
-    }
+    { new: true }
   ).exec();
-  // Returning successfull response
 
-  increaseBySettingKey({
-    settingKey: 'last_invoice_number',
-  });
-
-  // Returning successfull response
   return res.status(200).json({
     success: true,
     result: updateResult,

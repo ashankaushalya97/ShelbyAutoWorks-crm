@@ -1,0 +1,45 @@
+export const fields = {
+  customer: {
+    show: true,
+    label: 'Owner (Customer)',
+    type: 'async',
+    required: true,
+    entity: 'client',
+    displayLabels: ['name'],
+    dataIndex: ['customer', 'name'],
+  },
+  make: {
+    show: true,
+    label: 'Make',
+    type: 'string',
+    required: true,
+    placeholder: 'e.g. Toyota',
+  },
+  model: {
+    show: true,
+    label: 'Model',
+    type: 'string',
+    required: true,
+    placeholder: 'e.g. Hilux',
+  },
+  year: {
+    show: true,
+    label: 'Year',
+    type: 'number',
+    required: false,
+    placeholder: 'e.g. 2019',
+  },
+  licensePlate: {
+    show: true,
+    label: 'Licence Plate',
+    type: 'string',
+    required: true,
+    placeholder: 'e.g. ABC-1234',
+  },
+  notes: {
+    show: true,
+    label: 'Notes',
+    type: 'string',
+    required: false,
+  },
+};

@@ -34,6 +34,17 @@ const invoiceSchema = new mongoose.Schema({
     required: true,
     autopopulate: true,
   },
+  vehicle: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Vehicle',
+    autopopulate: true,
+  },
+  invoiceNumber: { type: String, trim: true },
+  paymentMethod: {
+    type: String,
+    enum: ['cash', 'card', 'other'],
+    default: 'cash',
+  },
   converted: {
     from: {
       type: String,
@@ -147,7 +158,7 @@ const invoiceSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['draft', 'pending', 'sent', 'refunded', 'cancelled', 'on hold'],
+    enum: ['draft', 'pending', 'sent', 'paid', 'refunded', 'cancelled', 'on hold'],
     default: 'draft',
   },
   pdf: {

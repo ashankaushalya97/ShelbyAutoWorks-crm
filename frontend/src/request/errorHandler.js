@@ -39,25 +39,17 @@ const errorHandler = (error) => {
   }
 
   if (response && response.data && response.data.jwtExpired) {
-    const result = window.localStorage.getItem('auth');
-    const jsonFile = window.localStorage.getItem('isLogout');
-    const { isLogout } = (jsonFile && JSON.parse(jsonFile)) || false;
     window.localStorage.removeItem('auth');
-    window.localStorage.removeItem('isLogout');
-    if (result || isLogout) {
-      window.location.href = '/logout';
-    }
+    window.localStorage.removeItem('settings');
+    window.location.href = '/login';
+    return;
   }
 
   if (response && response.status) {
     const message = response.data && response.data.message;
-
     const errorText = message || codeMessage[response.status];
-    const { status, error } = response;
-    notification.config({
-      duration: 20,
-      maxCount: 2,
-    });
+    const { status } = response;
+    notification.config({ duration: 20, maxCount: 2 });
     notification.error({
       message: `Request error ${status}`,
       description: errorText,
@@ -65,9 +57,11 @@ const errorHandler = (error) => {
 
     if (response?.data?.error?.name === 'JsonWebTokenError') {
       window.localStorage.removeItem('auth');
-      window.localStorage.removeItem('isLogout');
-      window.location.href = '/logout';
-    } else return response.data;
+      window.localStorage.removeItem('settings');
+      window.location.href = '/login';
+      return;
+    }
+    return response.data;
   } else {
     notification.config({
       duration: 15,

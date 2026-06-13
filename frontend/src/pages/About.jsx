@@ -1,5 +1,4 @@
-import { Button, Result } from 'antd';
-
+import { Result } from 'antd';
 import useLanguage from '@/locale/useLanguage';
 
 const About = () => {
@@ -7,28 +6,12 @@ const About = () => {
   return (
     <Result
       status="info"
-      title={'IDURAR'}
-      subTitle={translate('Do you need help on customize of this app')}
+      title="Shelby Auto Works"
+      subTitle="Garage Management System"
       extra={
-        <>
-          <p>
-            Website : <a href="https://www.idurarapp.com">www.idurarapp.com</a>{' '}
-          </p>
-          <p>
-            GitHub :{' '}
-            <a href="https://github.com/idurar/idurar-erp-crm">
-              https://github.com/idurar/idurar-erp-crm
-            </a>
-          </p>
-          <Button
-            type="primary"
-            onClick={() => {
-              window.open(`https://www.idurarapp.com/contact-us/`);
-            }}
-          >
-            {translate('Contact us')}
-          </Button>
-        </>
+        <p style={{ color: '#888' }}>
+          {translate('Contact us')} : shelbyautoworks125@gmail.com
+        </p>
       }
     />
   );

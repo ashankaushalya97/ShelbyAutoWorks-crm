@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Drawer, Layout, Menu } from 'antd';
+import { useSelector } from 'react-redux';
 
 import { useAppContext } from '@/context/appContext';
+import { selectIsAdmin } from '@/redux/auth/selectors';
 
 import useLanguage from '@/locale/useLanguage';
-// import logoIcon from '@/style/images/logo-icon.svg';
 import logoIcon from '@/style/images/shelbylogo.png';
-import logoText from '@/style/images/logo-text.svg';
 
 import useResponsive from '@/hooks/useResponsive';
 
@@ -17,23 +17,19 @@ import {
   ContainerOutlined,
   FileSyncOutlined,
   DashboardOutlined,
-  TagOutlined,
-  TagsOutlined,
-  UserOutlined,
   CreditCardOutlined,
   MenuOutlined,
-  FileOutlined,
   ShopOutlined,
-  FilterOutlined,
   WalletOutlined,
   ReconciliationOutlined,
+  CarOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
 
 export default function Navigation() {
   const { isMobile } = useResponsive();
-
   return isMobile ? <MobileSidebar /> : <Sidebar collapsible={false} />;
 }
 
@@ -43,13 +39,13 @@ function Sidebar({ collapsible, isMobile = false }) {
   const { state: stateApp, appContextAction } = useAppContext();
   const { isNavMenuClose } = stateApp;
   const { navMenu } = appContextAction;
-  const [showLogoApp, setLogoApp] = useState(isNavMenuClose);
   const [currentPath, setCurrentPath] = useState(location.pathname.slice(1));
 
   const translate = useLanguage();
   const navigate = useNavigate();
+  const isAdmin = useSelector(selectIsAdmin);
 
-  const items = [
+  const baseItems = [
     {
       key: 'dashboard',
       icon: <DashboardOutlined />,
@@ -60,7 +56,11 @@ function Sidebar({ collapsible, isMobile = false }) {
       icon: <CustomerServiceOutlined />,
       label: <Link to={'/customer'}>{translate('customers')}</Link>,
     },
-
+    {
+      key: 'vehicle',
+      icon: <CarOutlined />,
+      label: <Link to={'/vehicle'}>Vehicles</Link>,
+    },
     {
       key: 'invoice',
       icon: <ContainerOutlined />,
@@ -76,49 +76,56 @@ function Sidebar({ collapsible, isMobile = false }) {
       icon: <CreditCardOutlined />,
       label: <Link to={'/payment'}>{translate('payments')}</Link>,
     },
-
+    {
+      key: 'expense',
+      icon: <WalletOutlined />,
+      label: <Link to={'/expense'}>Expenses</Link>,
+    },
     {
       key: 'paymentMode',
-      label: <Link to={'/payment/mode'}>{translate('payments_mode')}</Link>,
       icon: <WalletOutlined />,
+      label: <Link to={'/payment/mode'}>{translate('payments_mode')}</Link>,
     },
     {
       key: 'taxes',
-      label: <Link to={'/taxes'}>{translate('taxes')}</Link>,
       icon: <ShopOutlined />,
-    },
-    {
-      key: 'generalSettings',
-      label: <Link to={'/settings'}>{translate('settings')}</Link>,
-      icon: <SettingOutlined />,
-    },
-    {
-      key: 'about',
-      label: <Link to={'/about'}>{translate('about')}</Link>,
-      icon: <ReconciliationOutlined />,
+      label: <Link to={'/taxes'}>{translate('taxes')}</Link>,
     },
   ];
 
+  const adminItems = [
+    {
+      key: 'staff',
+      icon: <TeamOutlined />,
+      label: <Link to={'/staff'}>Staff</Link>,
+    },
+    {
+      key: 'generalSettings',
+      icon: <SettingOutlined />,
+      label: <Link to={'/settings'}>{translate('settings')}</Link>,
+    },
+    {
+      key: 'about',
+      icon: <ReconciliationOutlined />,
+      label: <Link to={'/about'}>{translate('about')}</Link>,
+    },
+  ];
+
+  const items = isAdmin ? [...baseItems, ...adminItems] : baseItems;
+
   useEffect(() => {
-    if (location)
+    if (location) {
       if (currentPath !== location.pathname) {
         if (location.pathname === '/') {
           setCurrentPath('dashboard');
-        } else setCurrentPath(location.pathname.slice(1));
+        } else {
+          setCurrentPath(location.pathname.slice(1));
+        }
       }
+    }
   }, [location, currentPath]);
 
-  useEffect(() => {
-    if (isNavMenuClose) {
-      setLogoApp(isNavMenuClose);
-    }
-    const timer = setTimeout(() => {
-      if (!isNavMenuClose) {
-        setLogoApp(isNavMenuClose);
-      }
-    }, 200);
-    return () => clearTimeout(timer);
-  }, [isNavMenuClose]);
+
   const onCollapse = () => {
     navMenu.collapse();
   };
@@ -133,55 +140,26 @@ function Sidebar({ collapsible, isMobile = false }) {
       style={{
         overflow: 'auto',
         height: '100vh',
-
         position: isMobile ? 'absolute' : 'relative',
         bottom: '20px',
         ...(!isMobile && {
-          // border: 'none',
-          ['left']: '20px',
+          left: '20px',
           top: '20px',
-          // borderRadius: '8px',
         }),
       }}
       theme={'light'}
     >
-      <div
-        // className="logo"
-        onClick={() => navigate('/')}
-        style={{
-          cursor: 'pointer',
-        }}
-      >
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          // padding: '10px'
-          // borderWidth: '2px', borderColor: 'red', borderStyle: 'solid'
-        }}>
+      <div onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <img src={logoIcon} alt="Logo" style={{ height: '80px', width: '200px', objectFit: 'contain' }} />
         </div>
-
-        {/* {!showLogoApp && (
-          <img
-            src={logoText}
-            alt="Logo"
-            style={{
-              marginTop: '3px',
-              marginLeft: '10px',
-              height: '38px',
-            }}
-          />
-        )} */}
       </div>
       <Menu
         items={items}
         mode="inline"
         theme={'light'}
         selectedKeys={[currentPath]}
-        style={{
-          width: 256,
-        }}
+        style={{ width: 256 }}
       />
     </Sider>
   );
@@ -189,32 +167,19 @@ function Sidebar({ collapsible, isMobile = false }) {
 
 function MobileSidebar() {
   const [visible, setVisible] = useState(false);
-  const showDrawer = () => {
-    setVisible(true);
-  };
-  const onClose = () => {
-    setVisible(false);
-  };
 
   return (
     <>
       <Button
         type="text"
         size="large"
-        onClick={showDrawer}
+        onClick={() => setVisible(true)}
         className="mobile-sidebar-btn"
-        style={{ ['marginLeft']: 25 }}
+        style={{ marginLeft: 25 }}
       >
         <MenuOutlined style={{ fontSize: 18 }} />
       </Button>
-      <Drawer
-        width={250}
-        // style={{ backgroundColor: 'rgba(255, 255, 255, 1)' }}
-        placement={'left'}
-        closable={false}
-        onClose={onClose}
-        open={visible}
-      >
+      <Drawer width={250} placement={'left'} closable={false} onClose={() => setVisible(false)} open={visible}>
         <Sidebar collapsible={false} isMobile={true} />
       </Drawer>
     </>

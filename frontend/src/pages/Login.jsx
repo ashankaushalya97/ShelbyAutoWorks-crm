@@ -50,8 +50,8 @@ const LoginPage = () => {
           className="login-form"
           initialValues={{
             remember: true,
-            email:'ashankaushalya952@gmail.com',
-            password:'Ash@2025',
+            email:'admin@admin.com',
+            password:'admin123',
           }}
           onFinish={onFinish}
         >

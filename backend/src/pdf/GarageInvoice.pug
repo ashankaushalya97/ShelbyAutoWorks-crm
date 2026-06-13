@@ -1,0 +1,122 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1")
+    title #{model.invoiceNumber || 'Invoice'} — Shelby Auto Works
+    style.
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: sans-serif; font-size: 13px; color: #222; padding: 30px; }
+      .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; border-bottom: 2px solid #222; padding-bottom: 16px; }
+      .logo { max-height: 80px; max-width: 200px; object-fit: contain; }
+      .shop-info { text-align: right; }
+      .shop-info h2 { font-size: 18px; margin-bottom: 4px; }
+      .shop-info p { font-size: 12px; color: #555; margin: 2px 0; }
+      .meta { display: flex; justify-content: space-between; margin-bottom: 20px; }
+      .meta .block h3 { font-size: 11px; font-weight: 700; margin-bottom: 6px; color: #444; text-transform: uppercase; letter-spacing: 0.05em; }
+      .meta .block p { margin: 2px 0; }
+      .vehicle-block { background: #f8f8f8; border: 1px solid #e0e0e0; border-radius: 4px; padding: 10px 14px; margin-bottom: 20px; }
+      .vehicle-block h3 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #444; margin-bottom: 6px; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+      thead tr { background: #222; color: #fff; }
+      thead th { padding: 8px 10px; text-align: left; font-size: 12px; }
+      thead th.r { text-align: right; }
+      tbody tr:nth-child(even) { background: #f9f9f9; }
+      tbody td { padding: 8px 10px; border-bottom: 1px solid #eee; }
+      td.r { text-align: right; }
+      .totals { float: right; width: 260px; margin-bottom: 20px; }
+      .totals td { padding: 4px 8px; border: none; }
+      .totals .grand td { font-weight: 700; font-size: 15px; border-top: 2px solid #222; }
+      .footer-info { clear: both; display: flex; justify-content: space-between; margin-top: 20px; border-top: 1px solid #ddd; padding-top: 16px; font-size: 12px; color: #444; }
+      .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+      .paid { background: #d4edda; color: #155724; }
+      .unpaid { background: #fff3cd; color: #856404; }
+      .partially { background: #cce5ff; color: #004085; }
+      .print-btn { position: fixed; top: 16px; right: 16px; padding: 8px 20px; background: #222; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; z-index: 999; }
+      @media print { .print-btn { display: none !important; } }
+      @page { margin: 1.5cm; }
+  body
+    button.print-btn(onclick="window.print()") 🖨 Print
+
+    .header
+      if logoBase64
+        img.logo(src=logoBase64 alt="Shelby Auto Works")
+      else if settings.company_logo
+        img.logo(src=settings.public_server_file + settings.company_logo alt="logo")
+      .shop-info
+        if settings.company_address
+          p #{settings.company_address}
+        else
+          p 145/A, Kurunegala Rd, Minuwangoda
+        if settings.company_phone
+          p #{settings.company_phone}
+        else
+          p 0767419125
+        if settings.company_email
+          p #{settings.company_email}
+        else
+          p shelbyautoworks125@gmail.com
+
+    .meta
+      .block
+        h3 Bill To
+        p #{model.client.name}
+        if model.client.phone
+          p #{model.client.phone}
+        if model.client.address
+          p #{model.client.address}
+      .block
+        h3 Invoice
+        p
+          strong #{model.invoiceNumber || ('#' + model.number + '/' + model.year)}
+        p Date: #{moment(model.date).format(dateFormat)}
+        p Due: #{moment(model.expiredDate).format(dateFormat)}
+        p
+          | Status: &nbsp;
+          span(class='badge ' + model.paymentStatus) #{model.paymentStatus}
+        if model.paymentMethod
+          p Payment: #{model.paymentMethod.charAt(0).toUpperCase() + model.paymentMethod.slice(1)}
+
+    if model.vehicle
+      .vehicle-block
+        h3 Vehicle
+        p
+          strong #{model.vehicle.make} #{model.vehicle.model}
+          if model.vehicle.year
+            |  (#{model.vehicle.year})
+        p Licence Plate: #{model.vehicle.licensePlate}
+        if model.vehicle.notes
+          p Notes: #{model.vehicle.notes}
+
+    table
+      thead
+        tr
+          th Service / Part
+          th Description
+          th.r Qty
+          th.r Unit Price
+          th.r Total
+      tbody
+        each item in model.items
+          tr
+            td #{item.itemName}
+            td #{item.description || ''}
+            td.r #{item.quantity}
+            td.r #{moneyFormatter({amount: item.price})}
+            td.r #{moneyFormatter({amount: item.total})}
+
+    .totals
+      table
+        tr
+          td Subtotal
+          td.r #{moneyFormatter({amount: model.subTotal})}
+        tr.grand
+          td TOTAL
+          td.r #{moneyFormatter({amount: model.total})}
+
+    .footer-info
+      div
+        if model.notes
+          p
+            strong Notes:
+          p #{model.notes}

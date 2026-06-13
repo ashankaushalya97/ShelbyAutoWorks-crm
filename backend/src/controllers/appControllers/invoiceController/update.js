@@ -63,9 +63,15 @@ const update = async (req, res) => {
   }
   // Find document by id and updates with the required fields
 
-  let paymentStatus =
-    calculate.sub(total, discount) === credit ? 'paid' : credit > 0 ? 'partially' : 'unpaid';
-  body['paymentStatus'] = paymentStatus;
+  // If user explicitly marks status as paid, honour it; otherwise derive from credit/totals
+  if (body.status === 'paid') {
+    body['paymentStatus'] = 'paid';
+  } else if (body.status === 'cancelled' || body.status === 'refunded') {
+    body['paymentStatus'] = 'unpaid';
+  } else {
+    body['paymentStatus'] =
+      calculate.sub(total, discount) === credit ? 'paid' : credit > 0 ? 'partially' : 'unpaid';
+  }
 
   const result = await Model.findOneAndUpdate({ _id: req.params.id, removed: false }, body, {
     new: true, // return the new result instead of the old one

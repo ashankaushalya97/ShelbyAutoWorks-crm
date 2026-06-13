@@ -140,23 +140,8 @@ export default function ErpCrmApp() {
       </Layout>
     );
   else return (
-    <div style={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      alignItems: 'center', 
-      justifyContent: 'center', 
-      height: '100vh',
-      textAlign: 'center'
-    }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
       <PageLoader />
-      <div style={{ marginTop: '20px', fontSize: '16px', color: '#666' }}>
-        Loading application settings...
-      </div>
-      {hasTimedOut && (
-        <div style={{ marginTop: '10px', fontSize: '14px', color: '#999' }}>
-          Using default settings
-        </div>
-      )}
     </div>
   );
 }

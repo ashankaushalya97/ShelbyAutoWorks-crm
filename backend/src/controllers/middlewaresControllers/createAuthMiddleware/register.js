@@ -47,7 +47,7 @@ const register = async (req, res, { userModel }) => {
       surname: surname || '',
       email,
       enabled: true,
-      role: 'owner', // Default role for registered users
+      role: 'mechanic',
     });
 
     const savedUser = await newUser.save();
@@ -92,11 +92,9 @@ const register = async (req, res, { userModel }) => {
         _id: savedUser._id,
         name: savedUser.name,
         surname: savedUser.surname,
-        role: 'owner',
+        role: savedUser.role,
         email: savedUser.email,
-        // photo: savedUser.photo,
         token: token,
-        // maxAge: null,
       },
       message: 'User registered successfully',
     });
