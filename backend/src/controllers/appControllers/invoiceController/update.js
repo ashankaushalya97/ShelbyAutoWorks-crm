@@ -6,6 +6,7 @@ const custom = require('@/controllers/pdfController');
 
 const { calculate } = require('@/helpers');
 const schema = require('./schemaValidate');
+const recordInvoicePayment = require('./recordInvoicePayment');
 
 const update = async (req, res) => {
   let body = req.body;
@@ -77,11 +78,20 @@ const update = async (req, res) => {
     new: true, // return the new result instead of the old one
   }).exec();
 
+  // If this update marks the invoice paid, record the outstanding balance as a
+  // Payment so the revenue is captured by the P&L dashboard. Idempotent — only
+  // the amount needed to reach fully paid is recorded.
+  if (body.status === 'paid') {
+    await recordInvoicePayment({ invoice: result, adminId: req.admin._id });
+  }
+
+  const finalInvoice = await Model.findOne({ _id: req.params.id, removed: false });
+
   // Returning successfull response
 
   return res.status(200).json({
     success: true,
-    result,
+    result: finalInvoice,
     message: 'we update this document ',
   });
 };

@@ -4,6 +4,7 @@ const Model = mongoose.model('Invoice');
 
 const { calculate } = require('@/helpers');
 const schema = require('./schemaValidate');
+const recordInvoicePayment = require('./recordInvoicePayment');
 
 const create = async (req, res) => {
   let body = req.body;
@@ -68,15 +69,19 @@ const create = async (req, res) => {
 
   const result = await new Model(body).save();
   const fileId = 'invoice-' + result._id + '.pdf';
-  const updateResult = await Model.findOneAndUpdate(
-    { _id: result._id },
-    { pdf: fileId },
-    { new: true }
-  ).exec();
+  await Model.findOneAndUpdate({ _id: result._id }, { pdf: fileId }, { new: true }).exec();
+
+  // If the invoice was settled at creation time, record the matching payment so
+  // the revenue is captured by the P&L dashboard (which sums Payment records).
+  if (body.status === 'paid') {
+    await recordInvoicePayment({ invoice: result, adminId: req.admin._id });
+  }
+
+  const finalInvoice = await Model.findOne({ _id: result._id });
 
   return res.status(200).json({
     success: true,
-    result: updateResult,
+    result: finalInvoice,
     message: 'Invoice created successfully',
   });
 };
